@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-primary-100 text-white font-sans;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-primary-200;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary-500 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary-600;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent-500 hover:bg-accent-400 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200 transform hover:scale-105;
+  }
+  
+  .btn-secondary {
+    @apply bg-primary-300 hover:bg-primary-400 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200;
+  }
+  
+  .video-card {
+    @apply bg-primary-200 rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer;
+  }
+  
+  .video-card-overlay {
+    @apply absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300;
+  }
+  
+  .carousel-container {
+    @apply relative overflow-x-auto scrollbar-hide;
+  }
+  
+  .carousel-track {
+    @apply flex space-x-4 pb-4;
+  }
+  
+  .skeleton {
+    @apply bg-primary-300 animate-pulse rounded;
+  }
+  
+  .premium-card {
+    @apply relative overflow-hidden rounded-lg transition-all duration-500 transform hover:scale-105 hover:shadow-[0_0_15px_rgba(0,168,225,0.4)] cursor-pointer;
+  }
+  
+  .glass-effect {
+    @apply bg-[#1a1a1a]/60 backdrop-blur-xl border border-white/5;
+  }
+
+  .nav-blur {
+    @apply backdrop-blur-md bg-[#0f0f0f]/80 transition-all duration-300;
+  }
+
+  .hero-gradient {
+    background: linear-gradient(to top, #0f0f0f 0%, rgba(15, 15, 15, 0.8) 20%, transparent 60%);
+  }
+
+  .hero-side-gradient {
+    background: linear-gradient(to right, #0f0f0f 0%, rgba(15, 15, 15, 0.4) 40%, transparent 100%);
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

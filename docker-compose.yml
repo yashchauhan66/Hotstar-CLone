@@ -1,0 +1,152 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: hotstar-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - hotstar-network
+
+  # API Gateway
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: hotstar-api-gateway
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - PORT=5000
+      - AUTH_SERVICE=http://auth-service:5001
+      - USER_SERVICE=http://user-service:5002
+      - VIDEO_SERVICE=http://video-service:5003
+      - NOTIFICATION_SERVICE=http://notification-service:5006
+      - STREAMING_SERVICE=http://streaming-service:5005
+    depends_on:
+      - auth-service
+      - user-service
+      - video-service
+      - notification-service
+      - streaming-service
+    networks:
+      - hotstar-network
+
+  # Auth Service (Producer)
+  auth-service:
+    build: ./services/auth-services
+    container_name: hotstar-auth-service
+    restart: always
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env
+    environment:
+      - PORT=5001
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    networks:
+      - hotstar-network
+
+  # User Service
+  user-service:
+    build: ./services/user-services
+    container_name: hotstar-user-service
+    restart: always
+    ports:
+      - "5002:5002"
+    env_file:
+      - .env
+    environment:
+      - PORT=5002
+      - MONGO_URI=${MONGO_URI}
+    networks:
+      - hotstar-network
+
+  # Video Service
+  video-service:
+    build: ./services/video-services
+    container_name: hotstar-video-service
+    restart: always
+    ports:
+      - "5003:5003"
+    env_file:
+      - .env
+    environment:
+      - PORT=5003
+      - MONGO_URI=${MONGO_URI}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - VIDEO_STORAGE_PATH=./src/videos
+      - S3_PREFIX=videos/
+    networks:
+      - hotstar-network
+
+  # Notification Service (Consumer)
+  notification-service:
+    build: ./services/notification-services
+    container_name: hotstar-notification-service
+    restart: always
+    ports:
+      - "5006:5006"
+    env_file:
+      - .env
+    environment:
+      - PORT=5006
+      - MONGO_URI=${MONGO_URI}
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+    depends_on:
+      - rabbitmq
+    networks:
+      - hotstar-network
+
+  # Streaming Service
+  streaming-service:
+    build: ./services/streaming-serices
+    container_name: hotstar-streaming-service
+    restart: always
+    ports:
+      - "5005:5005"
+    env_file:
+      - .env
+    environment:
+      - PORT=5005
+      - MONGO_URI=${MONGO_URI}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+    networks:
+      - hotstar-network
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    container_name: hotstar-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api-gateway:5000/api
+    depends_on:
+      - api-gateway
+    networks:
+      - hotstar-network
+
+networks:
+  hotstar-network:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:

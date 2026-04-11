@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming Service Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { color: #4CAF50; }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #45a049; }
+        .result {
+            background: #1a1a1a;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error { color: #ff6b6b; }
+        .success { color: #4CAF50; }
+        video {
+            width: 100%;
+            margin-top: 10px;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎬 Streaming Service Test Page</h1>
+    
+    <div class="test-section">
+        <h2>1. Health Check</h2>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="healthResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. List Videos</h2>
+        <button onclick="listVideos()">Get Video List</button>
+        <div id="listResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Stream Video</h2>
+        <label>Video Filename:</label>
+        <input type="text" id="videoName" placeholder="sample.mp4" value="sample.mp4">
+        <br>
+        <button onclick="playVideo()">Play Video</button>
+        <button onclick="testStream()">Test Stream Headers</button>
+        <div id="streamResult" class="result"></div>
+        <video id="videoPlayer" controls style="display:none;"></video>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Video Upload (Video Service)</h2>
+        <label>Video Service URL:</label>
+        <input type="text" id="videoServiceUrl" value="http://localhost:5003" style="width: 200px;">
+        <br><br>
+        <button onclick="testVideoHealth()">Test Video Service Health</button>
+        <button onclick="testVideoList()">List Uploaded Videos</button>
+        <div id="videoResult" class="result"></div>
+    </div>
+
+    <script>
+        const STREAM_BASE = window.location.origin;
+        
+        async function testHealth() {
+            const result = document.getElementById('healthResult');
+            try {
+                const response = await fetch(`${STREAM_BASE}/health`);
+                const data = await response.json();
+                result.innerHTML = `<span class="success">✅ Health Check Passed</span>\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function listVideos() {
+            const result = document.getElementById('listResult');
+            try {
+                const response = await fetch(`${STREAM_BASE}/api/videos`);
+                const data = await response.json();
+                result.innerHTML = `<span class="success">✅ Found ${data.count} videos</span>\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function playVideo() {
+            const filename = document.getElementById('videoName').value;
+            const player = document.getElementById('videoPlayer');
+            const result = document.getElementById('streamResult');
+            
+            player.src = `${STREAM_BASE}/api/stream/${filename}`;
+            player.style.display = 'block';
+            player.load();
+            player.play().catch(e => {
+                result.innerHTML = `<span class="error">❌ Playback failed: ${e.message}</span>`;
+            });
+            
+            result.innerHTML = `<span class="success">🎬 Loading: ${filename}</span>`;
+        }
+        
+        async function testStream() {
+            const filename = document.getElementById('videoName').value;
+            const result = document.getElementById('streamResult');
+            
+            try {
+                // Test with range request
+                const response = await fetch(`${STREAM_BASE}/api/stream/${filename}`, {
+                    method: 'GET',
+                    headers: {
+                        'Range': 'bytes=0-1023'
+                    }
+                });
+                
+                const headers = {
+                    'Status': response.status,
+                    'Content-Type': response.headers.get('content-type'),
+                    'Content-Range': response.headers.get('content-range'),
+                    'Accept-Ranges': response.headers.get('accept-ranges'),
+                    'Content-Length': response.headers.get('content-length')
+                };
+                
+                result.innerHTML = `<span class="success">✅ Stream Test Passed</span>\n${JSON.stringify(headers, null, 2)}`;
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function testVideoHealth() {
+            const baseUrl = document.getElementById('videoServiceUrl').value;
+            const result = document.getElementById('videoResult');
+            
+            try {
+                const response = await fetch(`${baseUrl}/health`);
+                const data = await response.json();
+                result.innerHTML = `<span class="success">✅ Video Service Healthy</span>\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Video Service Error: ${error.message}</span>`;
+            }
+        }
+        
+        async function testVideoList() {
+            const baseUrl = document.getElementById('videoServiceUrl').value;
+            const result = document.getElementById('videoResult');
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/videos`);
+                const data = await response.json();
+                result.innerHTML = `<span class="success">✅ Video Service List</span>\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
