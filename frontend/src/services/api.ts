@@ -1,120 +1,64 @@
 import axios from 'axios';
 
-// Auth Service API (port 5001)
-const authApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:5001',
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://3.110.49.32:5000';
+
+
+const commonConfig = {
   headers: {
     'Content-Type': 'application/json',
   },
-});
-
-// Video Service API (port 5003)
-const videoApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_VIDEO_API_URL || 'http://localhost:5003',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Delete video API
-export const deleteVideo = async (videoId: string) => {
-  const token = localStorage.getItem('token');
-  const response = await videoApi.delete(`/api/videos/${videoId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data;
 };
 
-// User Service API (port 5002)
+const authApi = axios.create({
+  baseURL: BASE_URL,
+  ...commonConfig,
+});
+
+const videoApi = axios.create({
+  baseURL: BASE_URL,
+  timeout: 10000,
+  ...commonConfig,
+});
+
 const userApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_USER_API_URL || 'http://localhost:5002',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: BASE_URL,
+  ...commonConfig,
 });
 
 
-authApi.interceptors.request.use(
-  (config) => {
+
+const attachToken = (config: any) => {
+  if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-videoApi.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
   }
-);
+  return config;
+};
 
-userApi.interceptors.request.use(
-  (config) => {
+authApi.interceptors.request.use(attachToken, (error) => Promise.reject(error));
+videoApi.interceptors.request.use(attachToken, (error) => Promise.reject(error));
+userApi.interceptors.request.use(attachToken, (error) => Promise.reject(error));
+
+
+
+const handleAuthError = (error: any) => {
+  if (error.response?.status === 401) {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptors to handle errors
-authApi.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
-    return Promise.reject(error);
   }
-);
+  return Promise.reject(error);
+};
 
-videoApi.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
-  }
-);
+authApi.interceptors.response.use((res) => res, handleAuthError);
+videoApi.interceptors.response.use((res) => res, handleAuthError);
+userApi.interceptors.response.use((res) => res, handleAuthError);
 
-userApi.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
-  }
-);
 
 export const authAPI = {
   login: (email: string, password: string) =>
@@ -133,6 +77,8 @@ export const authAPI = {
     authApi.get('/auth/profile'),
 };
 
+
+
 export const videoAPI = {
   getAllVideos: (category?: string) =>
     videoApi.get(`/api/videos${category ? `?category=${category}` : ''}`),
@@ -140,32 +86,10 @@ export const videoAPI = {
   getVideoById: (id: string) =>
     videoApi.get(`/api/videos/${id}`),
 
-  getVideosByCategory: (category: string) =>
-    videoApi.get(`/api/videos/category/${category}`),
-
-  getTrendingVideos: () =>
-    videoApi.get('/api/videos/trending'),
-
-  getLatestVideos: () =>
-    videoApi.get('/api/videos/latest'),
-
-  searchVideos: (query: string) =>
-    videoApi.get(`/api/videos/search?q=${encodeURIComponent(query)}`),
-
-  getRecommendedVideos: () =>
-    videoApi.get('/api/videos/recommended'),
-
-  getTrendingMovies: () =>
-    videoApi.get('/api/videos/trending-movies'),
-
-  getPopularMovies: () =>
-    videoApi.get('/api/videos/movies/popular'),
-
-  getMovies: () =>
-    videoApi.get('/api/videos/movies'),
-
-  incrementViews: (id: string) =>
-    videoApi.post(`/api/videos/${id}/views`),
+  deleteVideo: async (videoId: string) => {
+    const response = await videoApi.delete(`/api/videos/${videoId}`);
+    return response.data;
+  },
 
   likeVideo: (id: string) =>
     videoApi.post(`/api/videos/${id}/like`),
@@ -173,61 +97,26 @@ export const videoAPI = {
   unlikeVideo: (id: string) =>
     videoApi.delete(`/api/videos/${id}/like`),
 
-  addToWatchHistory: (id: string, progress: number) =>
-    videoApi.post(`/api/videos/${id}/history`, { progress }),
-
-  getWatchHistory: () =>
-    videoApi.get('/api/videos/history'),
-
-  addToFavorites: (id: string) =>
-    videoApi.post(`/api/videos/${id}/favorite`),
-
-  removeFromFavorites: (id: string) =>
-    videoApi.delete(`/api/videos/${id}/favorite`),
-
-  getFavorites: () =>
-    videoApi.get('/api/videos/favorites'),
+  getTrendingVideos: () =>
+    videoApi.get('/api/videos/trending'),
 };
 
-export const streamingAPI = {
-  getStreamUrl: (videoId: string) => {
-    const streamingBaseUrl = process.env.NEXT_PUBLIC_STREAMING_BASE_URL || 'http://localhost:5005/api/stream';
-    return `${streamingBaseUrl}/${videoId}`;
-  },
-
-  getPlaylistUrl: (videoId: string) => {
-    const streamingBaseUrl = process.env.NEXT_PUBLIC_STREAMING_BASE_URL || 'http://localhost:5005/api/stream';
-    return `${streamingBaseUrl}/${videoId}?filename=index.m3u8`;
-  },
-
-  getSegmentUrl: (videoId: string, segment: string) => {
-    const streamingBaseUrl = process.env.NEXT_PUBLIC_STREAMING_BASE_URL || 'http://localhost:5005/api/stream';
-    return `${streamingBaseUrl}/${videoId}?filename=${segment}`;
-  },
-};
 
 export const userAPI = {
   getProfile: () =>
     userApi.get('/api/users/profile'),
 
-  createProfile: (data: { name: string; email: string; avatar?: string; preferences?: any }) =>
-    userApi.post('/api/users/profile', data),
-
-  updateProfile: (data: { name?: string; email?: string; avatar?: string; preferences?: any }) =>
+  updateProfile: (data: any) =>
     userApi.put('/api/users/profile', data),
+};
 
-  uploadAvatar: (file: File) => {
-    const formData = new FormData();
-    formData.append('avatar', file);
-    return userApi.post('/api/users/avatar', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+
+
+export const streamingAPI = {
+  getStreamUrl: (videoId: string) => {
+    const base = process.env.NEXT_PUBLIC_STREAMING_BASE_URL || 'http://3.110.49.32:5005/api/stream';
+    return `${base}/${videoId}`;
   },
-
-  addToHistory: (videoId: string) =>
-    userApi.post('/api/users/history', { videoId }),
 };
 
 export default { authAPI, videoAPI, streamingAPI, userAPI };
