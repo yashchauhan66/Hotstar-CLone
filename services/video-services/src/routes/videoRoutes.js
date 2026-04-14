@@ -4,7 +4,7 @@ import express from 'express';
 import { uploadVideo, uploadVideoWithThumbnail, getAllVideos, getVideoById, getTrendingVideos, getLatestVideos, getRecommendedVideos } from '../controllers/videoController.js';
 import { uploadSingle, uploadWithThumbnail, handleUploadError } from '../middlewares/uploadMiddleware.js';
 import { role } from '../middlewares/roleMiddleware.js';
-import  auth  from '../middlewares/authMiddleware.js';
+import  {auth}  from '../middlewares/authMiddleware.js';
 import { DeleteVideo }  from "../controllers/videoController.js";
 
 const router = express.Router();
