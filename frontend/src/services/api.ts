@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://3.110.49.32:5000';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://3.7.114.115:5000';
+const STREAM_BASE_URL =
+  process.env.NEXT_PUBLIC_STREAMING_BASE_URL || 'http://3.7.114.115:5005/api/stream';
 
 
 const commonConfig = {
@@ -9,6 +10,7 @@ const commonConfig = {
     'Content-Type': 'application/json',
   },
 };
+
 
 const authApi = axios.create({
   baseURL: BASE_URL,
@@ -27,7 +29,6 @@ const userApi = axios.create({
 });
 
 
-
 const attachToken = (config: any) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
@@ -41,7 +42,6 @@ const attachToken = (config: any) => {
 authApi.interceptors.request.use(attachToken, (error) => Promise.reject(error));
 videoApi.interceptors.request.use(attachToken, (error) => Promise.reject(error));
 userApi.interceptors.request.use(attachToken, (error) => Promise.reject(error));
-
 
 
 const handleAuthError = (error: any) => {
@@ -59,7 +59,7 @@ authApi.interceptors.response.use((res) => res, handleAuthError);
 videoApi.interceptors.response.use((res) => res, handleAuthError);
 userApi.interceptors.response.use((res) => res, handleAuthError);
 
-
+// ================= AUTH API =================
 export const authAPI = {
   login: (email: string, password: string) =>
     authApi.post('/auth/login', { email, password }),
@@ -67,55 +67,43 @@ export const authAPI = {
   register: (name: string, email: string, password: string, role: string = 'user') =>
     authApi.post('/auth/signup', { name, email, password, role }),
 
-  logout: () =>
-    authApi.post('/auth/logout'),
+  logout: () => authApi.post('/auth/logout'),
 
-  refreshToken: () =>
-    authApi.post('/auth/refresh'),
+  refreshToken: () => authApi.post('/auth/refresh'),
 
-  getProfile: () =>
-    authApi.get('/auth/profile'),
+  getProfile: () => authApi.get('/auth/profile'),
 };
-
 
 
 export const videoAPI = {
   getAllVideos: (category?: string) =>
     videoApi.get(`/api/videos${category ? `?category=${category}` : ''}`),
 
-  getVideoById: (id: string) =>
-    videoApi.get(`/api/videos/${id}`),
+  getVideoById: (id: string) => videoApi.get(`/api/videos/${id}`),
 
   deleteVideo: async (videoId: string) => {
     const response = await videoApi.delete(`/api/videos/${videoId}`);
     return response.data;
   },
 
-  likeVideo: (id: string) =>
-    videoApi.post(`/api/videos/${id}/like`),
+  likeVideo: (id: string) => videoApi.post(`/api/videos/${id}/like`),
 
-  unlikeVideo: (id: string) =>
-    videoApi.delete(`/api/videos/${id}/like`),
+  unlikeVideo: (id: string) => videoApi.delete(`/api/videos/${id}/like`),
 
-  getTrendingVideos: () =>
-    videoApi.get('/api/videos/trending'),
+  getTrendingVideos: () => videoApi.get('/api/videos/trending'),
 };
 
 
 export const userAPI = {
-  getProfile: () =>
-    userApi.get('/api/users/profile'),
+  getProfile: () => userApi.get('/api/users/profile'),
 
-  updateProfile: (data: any) =>
-    userApi.put('/api/users/profile', data),
+  updateProfile: (data: any) => userApi.put('/api/users/profile', data),
 };
-
 
 
 export const streamingAPI = {
   getStreamUrl: (videoId: string) => {
-    const base = process.env.NEXT_PUBLIC_STREAMING_BASE_URL || 'http://3.110.49.32:5005/api/stream';
-    return `${base}/${videoId}`;
+    return `${STREAM_BASE_URL}/${videoId}`;
   },
 };
 
