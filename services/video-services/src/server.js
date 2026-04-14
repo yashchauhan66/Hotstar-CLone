@@ -11,7 +11,7 @@ const app = express();
 
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://3.110.49.32:3000', 'http://3.7.114.115:3000'],
+  origin: "*",
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 app.get('/health', (req, res) => {
   res.json({
     success: true,
-    message: 'Server is running',
+    message: 'Video service is running',
     timestamp: new Date().toISOString()
   });
 });
@@ -65,9 +65,9 @@ const startServer = async () => {
     
     await connectDB();
     
-    app.listen(PORT, () => {
-      console.log(` Server running on http://localhost:${PORT}`);
-      console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Video Service running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
     
   } catch (error) {

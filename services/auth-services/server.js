@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 // Enable CORS for Next.js frontend
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://3.110.49.32:3000'],
+  origin: "*",
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -17,7 +17,7 @@ app.use(cors({
 app.use(express.json());
 
 
-app.use("/auth", authRoute); 
+app.use("/api/auth", authRoute); 
 app.get("/verify", verifyToken);
 
 app.get("/", (req, res) => {
@@ -26,6 +26,6 @@ app.get("/", (req, res) => {
 
 connectDB();
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Auth Service running on port ${PORT}`);
 });

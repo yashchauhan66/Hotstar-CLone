@@ -11,7 +11,7 @@ const app = express();
 
 // Enable CORS for Next.js frontend
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://3.110.49.32:3000'],
+  origin: "*", 
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Range']
@@ -24,22 +24,6 @@ app.get('/health', (req, res) => {
     success: true,
     message: 'Streaming service is running',
     timestamp: new Date().toISOString()
-  });
-});
-
-// Debug endpoint to check S3 config
-app.get('/debug', (req, res) => {
-  res.json({
-    env: {
-      AWS_REGION: process.env.AWS_REGION || 'NOT SET',
-      S3_BUCKET_NAME: process.env.S3_BUCKET_NAME || 'NOT SET',
-      AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY ? 'SET' : 'NOT SET',
-      AWS_SECRET_KEY: process.env.AWS_SECRET_KEY ? 'SET' : 'NOT SET',
-      USE_S3: process.env.USE_S3 || 'NOT SET'
-    },
-    s3Config: {
-      BUCKET_NAME: BUCKET_NAME || 'undefined'
-    }
   });
 });
 
@@ -64,16 +48,8 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5005;
 
-app.listen(PORT, () => {
-  console.log(` Streaming service running on http://localhost:${PORT}`);
-  console.log(` Video storage: ${process.env.VIDEO_STORAGE_PATH || './src/videos'}`);
-  console.log(`
-Test URLs:
-- List videos:    http://localhost:${PORT}/api/videos
-- Stream video:   http://localhost:${PORT}/api/stream/your-video.mp4
-- Video player:   http://localhost:${PORT}/api/player/your-video.mp4
-- Health check:   http://localhost:${PORT}/health
-  `);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Streaming Service running on port ${PORT}`);
 });
 
 export default app;

@@ -6,7 +6,7 @@ export const startConsumer = async () => {
   try {
     console.log(" Starting Notification Consumer...");
 
-    const connection = await amqp.connect("amqp://localhost:5672");
+    const connection = await amqp.connect(process.env.RABBITMQ_URL || "amqp://localhost:5672");
     const channel = await connection.createChannel();
 
     const queueName = "Hanuman";

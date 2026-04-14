@@ -15,6 +15,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization']
 }));
 
+app.use(express.json());
+
 app.use((req, res, next) => {
   console.log(`[GATEWAY] ${req.method} ${req.url}`);
   next();
@@ -33,8 +35,6 @@ app.use("/api/users", userProxy);
 app.use("/api/videos", videoProxy);
 app.use("/api/stream", streamingProxy);
 
-app.use(express.json());
-
 
 app.use((req, res) => {
   res.status(404).json({
@@ -45,6 +45,6 @@ app.use((req, res) => {
 
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(` Gateway running on ${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Gateway running on port ${PORT}`);
 });

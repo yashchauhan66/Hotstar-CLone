@@ -1,10 +1,10 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 
 export const authProxy = createProxyMiddleware({
-  target: process.env.AUTH_SERVICE || 'http://localhost:5001',
+  target: process.env.AUTH_SERVICE || 'http://auth-service:5001',
   changeOrigin: true,
   pathRewrite: {
-    "^/": "/auth/" 
+    "^/": "/api/auth/" 
   },
   onError: (err, req, res) => {
     console.error('Auth Proxy Error:', err.message);
@@ -13,7 +13,7 @@ export const authProxy = createProxyMiddleware({
 });
 
 export const userProxy = createProxyMiddleware({
-  target: process.env.USER_SERVICE || 'http://localhost:5002',
+  target: process.env.USER_SERVICE || 'http://user-service:5002',
   changeOrigin: true,
   pathRewrite: {
     "^/": "/api/users/" 
@@ -25,7 +25,7 @@ export const userProxy = createProxyMiddleware({
 });
 
 export const videoProxy = createProxyMiddleware({
-  target: process.env.VIDEO_SERVICE || 'http://localhost:5003',
+  target: process.env.VIDEO_SERVICE || 'http://video-service:5003',
   changeOrigin: true,
   pathRewrite: {
     "^/": "/api/videos/" 
@@ -37,7 +37,7 @@ export const videoProxy = createProxyMiddleware({
 });
 
 export const streamingProxy = createProxyMiddleware({
-  target: process.env.STREAMING_SERVICE || 'http://localhost:5005',
+  target: process.env.STREAMING_SERVICE || 'http://streaming-service:5005',
   changeOrigin: true,
   pathRewrite: {
     "^/": "/api/stream/" 

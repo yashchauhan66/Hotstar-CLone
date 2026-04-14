@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://3.7.114.115:5000';
 const STREAM_BASE_URL =
-  process.env.NEXT_PUBLIC_STREAMING_BASE_URL || 'http://3.7.114.115:5005/api/stream';
+  process.env.NEXT_PUBLIC_STREAMING_BASE_URL || 'http://3.7.114.115:5000/api/stream';
 
 const commonConfig = {
   headers: {
@@ -111,7 +111,7 @@ export const userAPI = {
 
 export const streamingAPI = {
   getStreamUrl: (videoId: string) => {
-    return `${STREAM_BASE_URL}/${videoId}`;
+    return `${STREAM_BASE_URL}/stream/${videoId}`;
   },
 };
 
