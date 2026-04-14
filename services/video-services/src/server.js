@@ -4,7 +4,7 @@ import { connectDB } from './config/database.js';
 import videoRoutes from './routes/videoRoutes.js';
 import dotenv from 'dotenv';
 dotenv.config();
-import auth from "./middlewares/authMiddleware.js";
+
 
 
 const app = express();
