@@ -6,7 +6,7 @@ import { RootState, AppDispatch } from '../store';
 import Banner from '../components/Banner';
 import TrendingVideos from '../components/TrendingVideos';
 import VideoGrid from '../components/VideoGrid';
-import { deleteVideo } from '../services/api';
+import { videoAPI } from '../services/api';
 import { 
   fetchVideos, 
   fetchBannerVideo 
@@ -50,7 +50,7 @@ const HomePage: React.FC = () => {
     if (!confirm('Are you sure you want to delete this video?')) return;
     
     try {
-      await deleteVideo(videoId);
+      await videoAPI.deleteVideo(videoId);
       // Refresh videos after deletion
       dispatch(fetchVideos());
     } catch (error) {

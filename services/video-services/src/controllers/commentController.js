@@ -10,7 +10,7 @@ export const addComment = async (req, res) => {
       return res.status(400).json({ message: 'Video ID and comment text are required' });
     }
 
-    // Verify video exists
+   
     const video = await Video.findById(videoId);
     if (!video) {
       return res.status(404).json({ message: 'Video not found' });
