@@ -88,7 +88,12 @@ export const Login = async (req, res) => {
         });
 
     } catch (err) {
-        res.status(500).json({ message: "Internal Server Error hai ya to" })
+        console.error("Login Controller Error:", err);
+        res.status(500).json({ 
+            success: false, 
+            message: "Internal Server Error", 
+            error: err.message 
+        });
     }
 }
 
