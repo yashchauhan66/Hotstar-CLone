@@ -67,13 +67,15 @@ export const authAPI = {
   register: (name: string, email: string, password: string, role: string = 'user') =>
     authApi.post('/auth/signup', { name, email, password, role }),
 
-  logout: () => authApi.post('/auth/logout'),
+  logout: () =>
+    authApi.post('/auth/logout'),
 
-  refreshToken: () => authApi.post('/auth/refresh'),
+  refreshToken: () =>
+    authApi.post('/auth/refresh'),
 
-  getProfile: () => authApi.get('/auth/profile'),
+  getProfile: () =>
+    authApi.get('/auth/profile'),
 };
-
 
 export const videoAPI = {
   getAllVideos: (category?: string) =>
