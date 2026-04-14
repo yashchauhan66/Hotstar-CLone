@@ -62,19 +62,19 @@ userApi.interceptors.response.use((res) => res, handleAuthError);
 // ================= AUTH API =================
 export const authAPI = {
   login: (email: string, password: string) =>
-    authApi.post('/auth/login', { email, password }),
+    authApi.post('/api/auth/login', { email, password }),
 
   register: (name: string, email: string, password: string, role: string = 'user') =>
-    authApi.post('/auth/signup', { name, email, password, role }),
+    authApi.post('/api/auth/signup', { name, email, password, role }),
 
   logout: () =>
-    authApi.post('/auth/logout'),
+    authApi.post('/api/auth/logout'),
 
   refreshToken: () =>
-    authApi.post('/auth/refresh'),
+    authApi.post('/api/auth/refresh'),
 
   getProfile: () =>
-    authApi.get('/auth/profile'),
+    authApi.get('/api/auth/profile'),
 };
 
 export const videoAPI = {
