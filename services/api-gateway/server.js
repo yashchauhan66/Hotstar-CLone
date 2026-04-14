@@ -1,7 +1,7 @@
 import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
-dotenv.config({ path: '.env' })
+dotenv.config({ path: '.env', override: true })
 import { authProxy, userProxy, videoProxy, streamingProxy } from "./routes/proxyRoutes.js"
 
 const app = express()
@@ -19,10 +19,11 @@ app.use(cors({
 }));
 
 
-app.use("/api/auth", authProxy)
-app.use("/api/users", userProxy)
-app.use("/api/videos", videoProxy)
-app.use("/api/stream", streamingProxy)
+app.use(authProxy)
+app.use(userProxy)
+app.use(videoProxy)
+app.use(streamingProxy)
+
 
 
 app.use(express.json())

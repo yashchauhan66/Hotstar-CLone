@@ -62,19 +62,19 @@ userApi.interceptors.response.use((res) => res, handleAuthError);
 
 export const authAPI = {
   login: (email: string, password: string) =>
-    authApi.post('/auth/login', { email, password }),
+    authApi.post('/api/auth/login', { email, password }),
 
   register: (name: string, email: string, password: string, role: string = 'user') =>
-    authApi.post('/auth/signup', { name, email, password, role }),
+    authApi.post('/api/auth/signup', { name, email, password, role }),
 
   logout: () =>
-    authApi.post('/auth/logout'),
+    authApi.post('/api/auth/logout'),
 
   refreshToken: () =>
-    authApi.post('/auth/refresh'),
+    authApi.post('/api/auth/refresh'),
 
   getProfile: () =>
-    authApi.get('/auth/profile'),
+    authApi.get('/api/auth/profile'),
 };
 
 
@@ -87,7 +87,7 @@ export const videoAPI = {
     videoApi.get(`/api/videos/${id}`),
 
   deleteVideo: async (videoId: string) => {
-    const response = await videoApi.delete(`/api/videos/${videoId}`);
+    const response = await videoApi.delete(`/api/videos/delete/${videoId}`);
     return response.data;
   },
 
@@ -99,7 +99,20 @@ export const videoAPI = {
 
   getTrendingVideos: () =>
     videoApi.get('/api/videos/trending'),
+
+  searchVideos: (query: string) =>
+    videoApi.get(`/api/videos/search?q=${query}`),
+
+  addComment: (videoId: string, text: string, userName?: string, userAvatar?: string) =>
+    videoApi.post('/api/videos/comments', { videoId, text, userName, userAvatar }),
+
+  getVideoComments: (videoId: string) =>
+    videoApi.get(`/api/videos/${videoId}/comments`),
+
+  deleteComment: (commentId: string) =>
+    videoApi.delete(`/api/videos/comments/${commentId}`),
 };
+
 
 
 export const userAPI = {
@@ -114,9 +127,10 @@ export const userAPI = {
 
 export const streamingAPI = {
   getStreamUrl: (videoId: string) => {
-    const base = process.env.NEXT_PUBLIC_STREAMING_BASE_URL || 'http://3.110.49.32:5005/api/stream';
-    return `${base}/${videoId}`;
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://3.110.49.32:5000';
+    return `${base}/api/stream/stream/${videoId}`;
   },
 };
+
 
 export default { authAPI, videoAPI, streamingAPI, userAPI };

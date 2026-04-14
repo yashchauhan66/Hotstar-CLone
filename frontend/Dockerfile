@@ -11,30 +11,32 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the application
+# Pass build arguments for Next.js environment variables
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+
+# Build the application with standalone output
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
 
-# Copy built app from builder
-COPY --from=builder /app/build /usr/share/nginx/html
+# Production stage - Use Node.js to run Next.js standalone
+FROM node:18-alpine
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+WORKDIR /app
 
-# Create non-root user
-RUN addgroup -g 1001 -S nginx
-RUN adduser -S nginx -u 1001
+# Copy package files
+COPY package*.json ./
 
-# Change ownership
-RUN chown -R nginx:nginx /usr/share/nginx/html
-USER nginx
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Copy standalone build from builder
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+ENV NODE_ENV=production
+ENV PORT=3000
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "server.js"]

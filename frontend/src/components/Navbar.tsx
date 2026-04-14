@@ -20,6 +20,16 @@ const Navbar: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -100,14 +110,36 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Actions - Remains the same */}
+        {/* Right Actions */}
         <div className="flex items-center space-x-6">
-          <button
-            onClick={() => setIsSearchOpen(!isSearchOpen)}
-            className="p-2 text-white/80 hover:text-[#00A8E1] transition-colors"
-          >
-            <Search size={22} />
-          </button>
+          <div className="relative flex items-center">
+            <AnimatePresence>
+              {isSearchOpen && (
+                <motion.form
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: isScrolled ? 200 : 300, opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  onSubmit={handleSearch}
+                  className="overflow-hidden mr-2"
+                >
+                  <input
+                    autoFocus
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search titles, genres..."
+                    className="w-full bg-white/10 border border-white/20 rounded-full py-1.5 px-4 text-xs text-white focus:outline-none focus:border-[#00A8E1]/50 placeholder:text-white/30"
+                  />
+                </motion.form>
+              )}
+            </AnimatePresence>
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="p-2 text-white/80 hover:text-[#00A8E1] transition-colors"
+            >
+              {isSearchOpen ? <X size={22} /> : <Search size={22} />}
+            </button>
+          </div>
 
           <Bell size={22} className="text-white/80 hover:text-[#00A8E1] transition-colors cursor-pointer hidden md:block" />
 
@@ -129,9 +161,9 @@ const Navbar: React.FC = () => {
                   className="flex items-center space-x-2 group"
                 >
                   <div className="w-9 h-9 bg-gradient-to-br from-[#00A8E1] to-[#6c5ce7] rounded-full flex items-center justify-center border-2 border-white/10 group-hover:border-[#00A8E1]/50 transition-all overflow-hidden">
-                    {userProfile?.avatar ? (
+                    {(user?.avatar || userProfile?.avatar) ? (
                       <img
-                        src={userProfile.avatar}
+                        src={user?.avatar || userProfile?.avatar}
                         alt="Profile"
                         className="w-full h-full object-cover"
                       />
@@ -152,9 +184,9 @@ const Navbar: React.FC = () => {
                   >
                     <div className="p-4 border-b border-white/5">
                       <div className="flex items-center space-x-3">
-                        {userProfile?.avatar && (
+                        {(user?.avatar || userProfile?.avatar) && (
                           <img
-                            src={userProfile.avatar}
+                            src={user?.avatar || userProfile?.avatar}
                             alt="Profile"
                             className="w-10 h-10 rounded-full object-cover border-2 border-white/10"
                           />

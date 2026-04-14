@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { Upload as UploadIcon, Film, FileText, Loader2, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { Upload as UploadIcon, Film, FileText, Loader2, Image as ImageIcon, Link as LinkIcon, ArrowLeft } from 'lucide-react';
 
 const UploadPage: React.FC = () => {
   const router = useRouter();
@@ -178,8 +178,21 @@ const UploadPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-24 pb-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-28 pb-12 px-4">
       <div className="max-w-4xl mx-auto">
+        {/* Navigation */}
+        <div className="flex items-center mb-8">
+          <button 
+            onClick={() => router.push('/')}
+            className="flex items-center space-x-2 text-white/70 hover:text-[#00A8E1] transition-all group"
+          >
+            <div className="p-2 rounded-lg bg-gray-800/50 group-hover:bg-[#00A8E1]/20 group-hover:text-[#00A8E1] transition-all">
+               <ArrowLeft size={20} />
+            </div>
+            <span className="font-semibold">Back to Home</span>
+          </button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-[#00A8E1] rounded-lg flex items-center justify-center mx-auto mb-4">

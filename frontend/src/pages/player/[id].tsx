@@ -2,17 +2,21 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Plus, Info, Share2, Star, Calendar, MessageSquare, Clock } from 'lucide-react';
+import { Play, Plus, Info, Share2, Star, Calendar, MessageSquare, Clock, ArrowLeft } from 'lucide-react';
 import { RootState, AppDispatch } from '../../store';
 import { fetchVideoById } from '../../store/slices/videoSlice';
 import { setVideo, reset } from '../../store/slices/playerSlice';
 import VideoPlayer from '../../components/VideoPlayer';
+import CommentSection from '../../components/CommentSection';
+import { useRef, useState } from 'react';
 
 const PlayerPage:
  React.FC = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { currentVideo, isLoading } = useSelector((state: RootState) => state.videos);
+  const { currentVideo, isLoading } = useSelector((state: RootState) => state.auth.user ? state.videos : state.videos); // Simplified check
+  const [showComments, setShowComments] = useState(false);
+  const commentsRef = useRef<HTMLDivElement>(null);
 
   const videoId = router.query.id as string;
 
@@ -41,6 +45,13 @@ const PlayerPage:
     };
   }, [dispatch]);
 
+  const scrollToComments = () => {
+    setShowComments(true);
+    setTimeout(() => {
+      commentsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
@@ -57,7 +68,7 @@ const PlayerPage:
       <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4">
         <div className="text-center space-y-6 max-w-md">
           <h1 className="text-4xl font-bold text-white">LOST IN SPACE</h1>
-          <p className="text-white/60">The title you're looking for appears to have vanished from our galaxy.</p>
+          <p className="text-white/60">The title you&apos;re looking for appears to have vanished from our galaxy.</p>
           <button
             onClick={() => router.push('/')}
             className="w-full py-4 bg-[#00A8E1] text-white font-bold rounded-xl shadow-lg shadow-[#00A8E1]/20 transform active:scale-95 transition-all"
@@ -76,10 +87,21 @@ const PlayerPage:
       exit={{ opacity: 0 }}
       className="min-h-screen bg-[#0f0f0f] text-white"
     >
+      {/* Floating Back Button - Positioned safely below Navbar */}
+      <div className="absolute top-[90px] left-6 z-50 pointer-events-none">
+        <button 
+          onClick={() => router.push('/')}
+          className="flex items-center space-x-2 px-4 py-2 bg-black/60 hover:bg-[#00A8E1] text-white/70 hover:text-white rounded-full backdrop-blur-md transition-all group pointer-events-auto border border-white/10"
+        >
+          <ArrowLeft size={16} />
+          <span className="font-bold tracking-widest text-[10px]">HOME</span>
+        </button>
+      </div>
+
       {/* Cinematic Player Section */}
-      <div className="w-full bg-black shadow-2xl">
+      <div className="w-full bg-black shadow-2xl relative">
         <div className="max-w-[1920px] mx-auto">
-          <div className="aspect-video relative group">
+          <div className="h-[60vh] md:h-[80vh] w-full relative group">
             {currentVideo.videoUrl || currentVideo.streamingUrl ? (
               <VideoPlayer
                 src={currentVideo.videoUrl || currentVideo.streamingUrl}
@@ -158,9 +180,14 @@ const PlayerPage:
                 ))}
               </div>
             </motion.div>
+
+            <div ref={commentsRef} className="border-t border-white/5 pt-12 mt-12">
+              <div className="max-w-[800px]">
+                <CommentSection videoId={currentVideo._id} />
+              </div>
+            </div>
           </div>
 
-          {/* Sidebar / More Info or Related placeholder */}
           <motion.div
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -168,7 +195,7 @@ const PlayerPage:
             className="space-y-8"
           >
             <div className="glass-effect p-6 rounded-2xl space-y-6">
-              <h4 className="font-bold text-white tracking-widest border-b border-white/5 pb-3">DETAILS</h4>
+              <h4 className="font-bold text-white tracking-widest border-b border-white/5 pb-3 uppercase">Details</h4>
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-sm">
@@ -186,8 +213,11 @@ const PlayerPage:
               </div>
 
               <div className="pt-4">
-                <button className="w-full py-3 bg-[#1a1a1a] hover:bg-[#252525] border border-white/10 rounded-xl transition-all text-xs font-black tracking-widest">
-                  SHOW COMMENTS
+                <button 
+                  onClick={() => commentsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                  className="w-full py-3 bg-[#1a1a1a] hover:bg-[#252525] border border-white/10 rounded-xl transition-all text-xs font-black tracking-widest uppercase"
+                >
+                  Go to Comments
                 </button>
               </div>
             </div>

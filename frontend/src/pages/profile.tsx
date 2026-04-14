@@ -6,6 +6,9 @@ import { userAPI } from '../services/api';
 import Layout from '../components/Layout';
 import { User, Mail, Camera, Save, Loader, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useDispatch } from 'react-redux';
+import { updateUser } from '../store/slices/authSlice';
+import { AppDispatch } from '../store';
 
 interface ProfileData {
   name: string;
@@ -19,6 +22,7 @@ interface ProfileData {
 
 const ProfilePage: React.FC = () => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   const [profile, setProfile] = useState<ProfileData>({
@@ -128,6 +132,12 @@ const ProfilePage: React.FC = () => {
           : `http://localhost:5002${response.data.avatar}`,
         preferences: response.data.preferences,
       });
+
+      // Update Redux state to reflect changes across the app
+      dispatch(updateUser({
+        name: response.data.name,
+        avatar: avatarUrl
+      }));
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update profile');
     } finally {
@@ -171,6 +181,12 @@ const ProfilePage: React.FC = () => {
       const response = await userAPI.uploadAvatar(file);
       const avatarUrl = `http://localhost:5002${response.data.data.avatar}`;
       setProfile({ ...profile, avatar: avatarUrl });
+      
+      // Update Redux state immediately after avatar upload
+      dispatch(updateUser({
+        avatar: avatarUrl
+      }));
+
       setMessage('Avatar uploaded successfully!');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to upload avatar');
@@ -288,8 +304,8 @@ const ProfilePage: React.FC = () => {
                   <input
                     type="email"
                     value={profile.email}
-                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                    className="w-full bg-primary-300/50 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-[#00A8E1] focus:bg-primary-400/50 transition-all"
+                    readOnly
+                    className="w-full bg-primary-300/30 text-white/50 cursor-not-allowed rounded-lg py-3 px-4 focus:outline-none transition-all"
                     placeholder="Enter your email"
                   />
                 </div>

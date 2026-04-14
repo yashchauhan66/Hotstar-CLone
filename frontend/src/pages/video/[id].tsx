@@ -12,7 +12,7 @@ import {
 } from '../../store/slices/videoSlice';
 import { setVideo, reset } from '../../store/slices/playerSlice';
 import Skeleton from '../../components/Skeleton';
-import { Play, Clock, Eye, ThumbsUp, Share, Heart } from 'lucide-react';
+import { Play, Clock, Eye, ThumbsUp, Share, Heart, ArrowLeft } from 'lucide-react';
 
 const VideoDetailPage: React.FC = () => {
   const router = useRouter();
@@ -148,8 +148,21 @@ const VideoDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-primary-100 pt-20">
+    <div className="min-h-screen bg-primary-100 pt-32 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Navigation */}
+        <div className="flex items-center mb-8">
+          <button 
+            onClick={() => router.push('/')}
+            className="flex items-center space-x-2 text-white/70 hover:text-accent-500 transition-all group"
+          >
+            <div className="p-2 rounded-lg bg-primary-200 group-hover:bg-accent-500/20 group-hover:text-accent-500 transition-all">
+               <ArrowLeft size={20} />
+            </div>
+            <span className="font-semibold">Back to Home</span>
+          </button>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="md:col-span-2 space-y-6">

@@ -45,10 +45,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const video = videoRef.current;
     let hls: Hls | null = null;
 
-    // Check if source is HLS or MP4
     const isHls = src.includes('.m3u8');
-
-    console.log('VideoPlayer: Loading video', { src, isHls, autoplay });
 
     if (isHls && Hls.isSupported()) {
       hls = new Hls({
@@ -60,10 +57,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
       hls.loadSource(src);
       hls.attachMedia(video);
-      
       hlsRef.current = hls;
 
-      // HLS events
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         dispatch(setLoading(false));
         if (autoplay) {
@@ -88,10 +83,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
       // Quality levels
       hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-        const level = hls.levels[data.level];
-        if (level) {
-          const quality = `${level.height}p`;
-          dispatch(setQuality(quality));
+        if (hls) {
+          const level = hls.levels[data.level];
+          if (level) {
+            const quality = `${level.height}p`;
+            dispatch(setQuality(quality));
+          }
         }
       });
     } else if (isHls && video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -122,7 +119,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       });
     }
 
-    // Video events
     const handleTimeUpdate = () => {
       dispatch(setCurrentTime(video.currentTime));
     };
@@ -156,7 +152,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       dispatch(toggleFullscreen());
     };
 
-    // Add event listeners
     video.addEventListener('timeupdate', handleTimeUpdate);
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('play', handlePlay);
@@ -167,7 +162,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     video.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 
     return () => {
-      // Cleanup
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('play', handlePlay);
@@ -230,74 +224,113 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div 
       ref={containerRef} 
-      className={`relative w-full h-full bg-black overflow-hidden ${className}`}
+      className={`group relative w-full h-full bg-[#0a0a0a] overflow-hidden rounded-xl shadow-2xl ${className}`}
+      onContextMenu={(e) => e.preventDefault()}
     >
-      {/* 
-        FIXED: Added object-contain to prevent video stretching
-        object-fit: contain = shows full video with black bars (Netflix style)
-        object-fit: cover = fills container, crops edges (not recommended for player)
-      */}
       <video
         ref={videoRef}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-contain cursor-pointer"
         poster={poster}
         playsInline
         controls={false}
+        onClick={handlePlayPause}
       />
       
       {/* Custom Controls Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-        <div className="flex items-center space-x-4">
-          {/* Play/Pause Button */}
-          <button
-            onClick={handlePlayPause}
-            className="text-white hover:text-accent-500 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-          </button>
-
-          {/* Progress Bar */}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent pt-20 pb-6 px-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        
+        {/* Progress Bar Container */}
+        <div className="relative group/progress mb-6">
           <input
             type="range"
             min="0"
-            max="100"
-            value={videoRef.current && videoRef.current.duration ? (videoRef.current.currentTime / videoRef.current.duration) * 100 : 0}
+            max={videoRef.current?.duration || 100}
+            step="0.1"
+            value={videoRef.current?.currentTime || 0}
             onChange={handleSeek}
-            className="flex-1 h-1 bg-primary-500 rounded-lg appearance-none cursor-pointer"
+            className="absolute inset-0 w-full h-1.5 opacity-0 cursor-pointer z-20"
           />
+          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+            <div className="relative h-full w-full">
+              <div 
+                className="absolute top-0 left-0 h-full bg-[#00A8E1] transition-all duration-100"
+                style={{ width: `${(videoRef.current?.currentTime || 0) / (videoRef.current?.duration || 1) * 100}%` }}
+              />
+            </div>
+          </div>
+          <div 
+            className="absolute top-1/2 -ml-2 -mt-2 w-4 h-4 bg-[#00A8E1] rounded-full shadow-[0_0_10px_#00A8E1] opacity-0 group-hover/progress:opacity-100 transition-opacity duration-200 pointer-events-none z-10"
+            style={{ left: `${(videoRef.current?.currentTime || 0) / (videoRef.current?.duration || 1) * 100}%` }}
+          />
+        </div>
 
-          {/* Volume Control */}
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-6">
             <button
-              onClick={handleMuteToggle}
-              className="text-white hover:text-accent-500 transition-colors"
+              onClick={handlePlayPause}
+              className="text-white hover:text-[#00A8E1] transform active:scale-90 transition-all"
             >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-              </svg>
+              {videoRef.current?.paused ? (
+                <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              ) : (
+                <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+              )}
             </button>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={videoRef.current?.volume || 1}
-              onChange={handleVolumeChange}
-              className="w-20 h-1 bg-primary-500 rounded-lg appearance-none cursor-pointer"
-            />
+
+            <div className="text-white/80 font-mono text-sm tracking-widest hidden sm:block">
+              <span>{Math.floor((videoRef.current?.currentTime || 0) / 60)}:{(Math.floor((videoRef.current?.currentTime || 0) % 60)).toString().padStart(2, '0')}</span>
+              <span className="mx-2 text-white/20">/</span>
+              <span className="text-white/40">{Math.floor((videoRef.current?.duration || 0) / 60)}:{(Math.floor((videoRef.current?.duration || 0) % 60)).toString().padStart(2, '0')}</span>
+            </div>
+
+            <div className="flex items-center group/volume">
+              <button
+                onClick={handleMuteToggle}
+                className="text-white hover:text-[#00A8E1] transition-colors p-2"
+              >
+                {videoRef.current?.muted || videoRef.current?.volume === 0 ? (
+                  <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                  </svg>
+                )}
+              </button>
+              
+              <div className="w-0 group-hover/volume:w-24 transition-all duration-300 overflow-hidden flex items-center">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={videoRef.current?.muted ? 0 : (videoRef.current?.volume || 1)}
+                  onChange={handleVolumeChange}
+                  className="w-20 h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-[#00A8E1]"
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Fullscreen Button */}
-          <button
-            onClick={handleFullscreen}
-            className="text-white hover:text-accent-500 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-            </svg>
-          </button>
+          <div className="flex items-center space-x-6">
+            <div className="text-[10px] font-black tracking-widest text-[#00A8E1] border border-[#00A8E1]/30 px-2 py-1 rounded hidden xs:block">
+              HD ULTRA
+            </div>
+
+            <button
+              onClick={handleFullscreen}
+              className="text-white hover:text-[#00A8E1] transition-all transform active:scale-90"
+            >
+              <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

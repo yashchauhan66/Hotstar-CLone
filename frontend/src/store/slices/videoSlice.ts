@@ -174,7 +174,7 @@ export const addToWatchHistory = createAsyncThunk(
   'videos/addToWatchHistory',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await videoAPI.addToWatchHistory(id);
+      const response = await videoAPI.addToWatchHistory(id, 0);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to add to history');

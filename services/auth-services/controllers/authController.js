@@ -28,7 +28,7 @@ export const Signup = async (req, res) => {
         await newUser.save();
         console.log("User signed up successfully:", email , role);
 
-        const token = jwt.sign({ id: newUser._id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
+        const token = jwt.sign({ id: newUser._id, email: newUser.email, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
         res.status(201).json({
             message: "User Registered Successfully",
@@ -65,7 +65,7 @@ export const Login = async (req, res) => {
             return res.status(400).json({ message: "Invalid Credentials" })
         }
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
+        const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
         console.log("Login successful for user:", user.email);
       
         sendToQueue({
@@ -94,16 +94,33 @@ export const Login = async (req, res) => {
 
 export const verifyToken = async (req, res) => {
     try {
-        const Token = req.headers.authorization.split(" ")[1];
+        const Token = req.headers.authorization && req.headers.authorization.split(" ")[1];
         if (!Token) {
             return res.status(401).json({ message: "Unauthorized" })
         }
         const decoded = jwt.verify(Token, process.env.JWT_SECRET);
-        console.log(decoded);
-        console.log("Token Verified");
         res.json(decoded);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Internal Server Error" })
+        res.status(401).json({ message: "Invalid Token" })
     }
 }
+
+export const GetProfile = async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(" ")[1];
+        if (!token) return res.status(401).json({ message: "Unauthorized" });
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id).select("-password");
+        if (!user) return res.status(404).json({ message: "User not found" });
+        
+        res.status(200).json({ user });
+    } catch (err) {
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+export const Logout = async (req, res) => {
+    res.status(200).json({ message: "Logged out successfully" });
+}
+

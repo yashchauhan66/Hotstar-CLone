@@ -1,82 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../store';
-import { searchVideos } from '../store/slices/videoSlice';
-import Sidebar from '../components/Sidebar';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { videoAPI } from '../services/api';
 import VideoCard from '../components/VideoCard';
-import { Search as SearchIcon } from 'lucide-react';
+import { Loader2, Search as SearchIcon, Film } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const SearchPage: React.FC = () => {
-    const dispatch = useDispatch<AppDispatch>();
-    const [searchInput, setSearchInput] = useState('');
-    const [debouncedInput, setDebouncedInput] = useState('');
+  const router = useRouter();
+  const { q } = router.query;
+  const [results, setResults] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-    const { searchResults, isLoading } = useSelector((state: RootState) => state.videos);
+  useEffect(() => {
+    if (q) {
+      performSearch(q as string);
+    }
+  }, [q]);
 
-    useEffect(() => {
-        const timerId = setTimeout(() => {
-            setDebouncedInput(searchInput);
-        }, 500);
+  const performSearch = async (query: string) => {
+    try {
+      setIsLoading(true);
+      const response = await videoAPI.searchVideos(query);
+      if (response.data && response.data.success) {
+        setResults(response.data.data);
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        return () => {
-            clearTimeout(timerId);
-        };
-    }, [searchInput]);
+  return (
+    <div className="min-h-screen bg-[#0f0f0f] pt-28 pb-12 px-6 md:px-12">
+      <div className="max-w-[1920px] mx-auto">
+        <header className="mb-12">
+          <div className="flex items-center space-x-4 text-white/40 mb-2">
+            <SearchIcon size={18} />
+            <span className="text-sm font-bold tracking-[0.2em] uppercase">Search Results</span>
+          </div>
+          <h1 className="text-4xl font-black text-white">
+            Showing results for <span className="text-[#00A8E1]">"{q}"</span>
+          </h1>
+          <p className="mt-2 text-white/40">Found {results.length} titles matching your query</p>
+        </header>
 
-    useEffect(() => {
-        if (debouncedInput.trim().length > 0) {
-            dispatch(searchVideos(debouncedInput));
-        }
-    }, [debouncedInput, dispatch]);
-
-    return (
-        <div className="min-h-screen bg-primary-100 flex overflow-hidden text-white font-sans">
-            <Sidebar />
-            <main className="flex-1 w-full pl-20 overflow-y-auto no-scrollbar pt-12 pb-24">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-                    <div className="relative max-w-2xl mx-auto mb-12">
-                        <div className="relative bg-primary-200/50 rounded-lg overflow-hidden border-b-2 border-transparent focus-within:border-accent-500 transition-colors">
-                            <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-primary-400" />
-                            <input
-                                type="text"
-                                value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
-                                placeholder="Movies, shows and more"
-                                className="w-full bg-transparent text-white text-xl md:text-2xl py-4 pl-14 pr-4 focus:outline-none placeholder-primary-500"
-                                autoFocus
-                            />
-                        </div>
-                    </div>
-
-                    {isLoading ? (
-                        <div className="flex justify-center mt-20">
-                            <div className="w-12 h-12 border-4 border-primary-500 border-t-accent-500 rounded-full animate-spin" />
-                        </div>
-                    ) : searchResults.length > 0 ? (
-                        <div>
-                            <h2 className="text-xl font-bold mb-6 text-primary-300">Results for "{debouncedInput}"</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                {searchResults.map((video) => (
-                                    <VideoCard key={video._id} video={video} size="small" />
-                                ))}
-                            </div>
-                        </div>
-                    ) : debouncedInput.length > 0 ? (
-                        <div className="text-center mt-20">
-                            <h2 className="text-xl font-bold text-white mb-2">No results found</h2>
-                            <p className="text-primary-400">Try searching for a different keyword or title.</p>
-                        </div>
-                    ) : (
-                        <div className="text-center mt-20">
-                            <h2 className="text-2xl font-bold text-primary-400 opacity-50">Search for your favorite content</h2>
-                        </div>
-                    )}
-
-                </div>
-            </main>
-        </div>
-    );
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-40 space-y-4">
+            <Loader2 className="animate-spin text-[#00A8E1]" size={48} />
+            <p className="text-white/20 font-bold tracking-widest text-xs uppercase">Scouring the archives...</p>
+          </div>
+        ) : results.length > 0 ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6"
+          >
+            {results.map((video) => (
+              <VideoCard
+                key={video._id}
+                id={video._id}
+                title={video.title}
+                thumbnail={video.thumbnail}
+                views={video.views}
+                duration={video.duration}
+                category={video.category}
+              />
+            ))}
+          </motion.div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-40 text-center space-y-6">
+            <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center">
+              <Film size={40} className="text-white/10" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold text-white">No results found</h3>
+              <p className="text-white/40 max-w-md">
+                We couldn't find any matches for "{q}". Try checking your spelling or use more general keywords.
+              </p>
+            </div>
+            <button 
+              onClick={() => router.push('/')}
+              className="mt-4 px-8 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/5"
+            >
+              Back to Home
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default SearchPage;

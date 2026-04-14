@@ -3,22 +3,6 @@ import { Video } from '../models/Video.js';
 
 export const uploadVideoWithThumbnail = async (req, res) => {
   try {
-    console.log(' Upload request with thumbnail received');
-    
-    
-    if (req.files) {
-      console.log('Files received:', Object.keys(req.files));
-      if (req.files.video) {
-        console.log('Video file:', req.files.video[0]?.originalname, req.files.video[0]?.mimetype, req.files.video[0]?.size);
-      }
-      if (req.files.thumbnail) {
-        console.log('Thumbnail file:', req.files.thumbnail[0]?.originalname, req.files.thumbnail[0]?.mimetype, req.files.thumbnail[0]?.size);
-      }
-    } else {
-      console.log('No files received');
-    }
-    console.log('Body:', req.body);
-
     if (!req.files || !req.files.video) {
       return res.status(400).json({
         success: false,
@@ -27,7 +11,6 @@ export const uploadVideoWithThumbnail = async (req, res) => {
     }
 
     const video = await processUploadWithThumbnail(req.files, req.body);
-    console.log(' Upload complete. Thumbnail URL:', video.thumbnail);
 
     res.status(201).json({
       success: true,
@@ -55,10 +38,6 @@ export const uploadVideoWithThumbnail = async (req, res) => {
 
 export const uploadVideo = async (req, res) => {
   try {
-    console.log(' Upload request received (backward compatible)');
-    console.log('File:', req.file ? req.file.originalname : 'No file');
-    console.log('Body:', req.body);
-
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -251,3 +230,34 @@ export const DeleteVideo = async (req, res) => {
   }
 };
 
+export const searchVideos = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({ success: false, message: 'Search query is required' });
+    }
+
+    const searchRegex = new RegExp(q, 'i');
+    
+    const videos = await Video.find({
+      $or: [
+        { title: searchRegex },
+        { description: searchRegex },
+        { tags: { $in: [searchRegex] } },
+        { category: searchRegex }
+      ]
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: videos.length,
+      data: videos
+    });
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to search videos'
+    });
+  }
+};
