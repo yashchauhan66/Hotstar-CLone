@@ -134,4 +134,3 @@ networks:
 volumes:
   rabbitmq_data:
   video_storage:
-  mongodb_data:

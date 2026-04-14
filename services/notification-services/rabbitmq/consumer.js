@@ -1,46 +1,39 @@
-// consumer.js
 import amqp from "amqplib";
 import { sendEmail } from "../sendEmail/emailService.js";
 
 export const startConsumer = async () => {
-  try {
-    console.log(" Starting Notification Consumer...");
+  const RABBIT_URL = process.env.RABBITMQ_URL || "amqp://localhost:5672";
+  
+  while (true) {
+    try {
+      console.log("Connecting to RabbitMQ (Consumer)...");
+      const connection = await amqp.connect(RABBIT_URL);
+      const channel = await connection.createChannel();
+      const queueName = "Hanuman";
 
-    const connection = await amqp.connect(process.env.RABBITMQ_URL || "amqp://localhost:5672");
-    const channel = await connection.createChannel();
+      await channel.assertQueue(queueName, { durable: true });
+      channel.prefetch(1);
 
-    const queueName = "Hanuman";
+      console.log("Notification Consumer Ready. Waiting for messages...");
 
-    await channel.assertQueue(queueName, { durable: true });
-
-
-    channel.prefetch(1);
-
-    console.log(" Waiting for messages...");
-
-    channel.consume(queueName, async (msg) => {
-      if (!msg) return;
-
-      try {
-        const data = JSON.parse(msg.content.toString());
-
-        console.log(" Received:", data);
-
-        if (data.type === "LOGIN_SUCCESS") {
-          await sendEmail(data);
+      channel.consume(queueName, async (msg) => {
+        if (!msg) return;
+        try {
+          const data = JSON.parse(msg.content.toString());
+          console.log("Notification Received:", data.email);
+          if (data.type === "LOGIN_SUCCESS") {
+            await sendEmail(data);
+          }
+          channel.ack(msg);
+        } catch (err) {
+          console.error("Error processing message:", err.message);
+          channel.nack(msg, false, true);
         }
-
-        channel.ack(msg); 
-
-      } catch (err) {
-        console.error(" Error:", err);
-
-        
-        channel.nack(msg, false, true);
-      }
-    });
-
-  } catch (err) {
-    console.error(" Consumer Error:", err);
+      });
+      break;
+    } catch (err) {
+      console.error("RabbitMQ Consumer connection failed, retrying in 5s...", err.message);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
   }
 };

@@ -7,7 +7,6 @@ dotenv.config({ path: '.env', override: true });
 
 const app = express();
 
-
 app.use(cors({
   origin: "*", 
   credentials: true,
@@ -15,15 +14,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization']
 }));
 
-app.use(express.json());
-
 app.use((req, res, next) => {
   console.log(`[GATEWAY] ${req.method} ${req.url}`);
   next();
 });
 
 app.get("/health", (req, res) => {
-  res.json({
+  res.status(200).json({
     status: "OK",
     service: "API Gateway",
     time: new Date().toISOString()
@@ -34,6 +31,9 @@ app.use("/api/auth", authProxy);
 app.use("/api/users", userProxy);
 app.use("/api/videos", videoProxy);
 app.use("/api/stream", streamingProxy);
+
+
+app.use(express.json());
 
 
 app.use((req, res) => {

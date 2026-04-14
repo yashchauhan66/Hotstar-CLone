@@ -1,11 +1,23 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
-const connectDB= async(req , res)=>{
-    try{
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDb Connected Successfully");
-    }catch(error){
-      console.log("Error connecting to database",error.message);
+const connectDB = async () => {
+  const MONGO_URI = process.env.MONGO_URI;
+  
+  if (!MONGO_URI) {
+    console.error("MONGO_URI not found in environment variables!");
+    return;
+  }
+
+  while (true) {
+    try {
+      await mongoose.connect(MONGO_URI);
+      console.log("MongoDB Connected Successfully (Auth Service)");
+      break;
+    } catch (error) {
+      console.error("Database connection failed, retrying in 5s...", error.message);
+      await new Promise(resolve => setTimeout(resolve, 5000));
     }
-}
+  }
+};
+
 export default connectDB;

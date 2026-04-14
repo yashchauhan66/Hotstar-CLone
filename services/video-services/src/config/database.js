@@ -1,19 +1,21 @@
-
-
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-dotenv.config();
 
 export const connectDB = async () => {
-  try {
-    
-    const connection = await mongoose.connect(process.env.MONGO_URI);
-    
-    console.log(` MongoDB Connected: ${connection.connection.host}`);
-    
-  } catch (error) {
-    console.error(` Database connection failed: ${error.message}`);
+  const MONGO_URI = process.env.MONGO_URI;
+  
+  if (!MONGO_URI) {
+    console.error("MONGO_URI not found in environment variables!");
+    return;
+  }
 
-    process.exit(1);
+  while (true) {
+    try {
+      const connection = await mongoose.connect(MONGO_URI);
+      console.log(`MongoDB Connected: ${connection.connection.host} (Video Service)`);
+      break;
+    } catch (error) {
+      console.error("Database connection failed, retrying in 5s...", error.message);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
   }
 };
