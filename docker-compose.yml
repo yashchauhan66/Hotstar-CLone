@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Message Broker
+  # RabbitMQ
   rabbitmq:
     image: rabbitmq:3-management
     container_name: hotstar-rabbitmq
@@ -14,7 +14,7 @@ services:
     networks:
       - hotstar-network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q check_running"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -27,9 +27,11 @@ services:
     restart: always
     ports:
       - "5001:5001"
-    env_file: .env
     environment:
+      - NODE_ENV=production
       - PORT=5001
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
       - RABBITMQ_URL=amqp://rabbitmq:5672
     depends_on:
       rabbitmq:
@@ -39,23 +41,35 @@ services:
 
   # User Service
   user-service:
-    build: ./services/user-services
+    build: 
+      context: ./services/user-services
     container_name: hotstar-user-service
     restart: always
     ports:
       - "5002:5002"
-    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - PORT=5002
+      - MONGO_URI=${MONGO_URI}
     networks:
       - hotstar-network
 
   # Video Service
   video-service:
-    build: ./services/video-services
+    build: 
+      context: ./services/video-services
     container_name: hotstar-video-service
     restart: always
     ports:
       - "5003:5003"
-    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - PORT=5003
+      - MONGO_URI=${MONGO_URI}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
     volumes:
       - video_storage:/app/src/videos
     networks:
@@ -63,12 +77,20 @@ services:
 
   # Streaming Service
   streaming-service:
-    build: ./services/streaming-serices
+    build: 
+      context: ./services/streaming-serices
     container_name: hotstar-streaming-service
     restart: always
     ports:
       - "5005:5005"
-    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - PORT=5005
+      - MONGO_URI=${MONGO_URI}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
     volumes:
       - video_storage:/app/src/videos
     networks:
@@ -76,14 +98,19 @@ services:
 
   # Notification Service
   notification-service:
-    build: ./services/notification-services
+    build: 
+      context: ./services/notification-services
     container_name: hotstar-notification-service
     restart: always
     ports:
       - "5006:5006"
-    env_file: .env
     environment:
+      - NODE_ENV=production
+      - PORT=5006
+      - MONGO_URI=${MONGO_URI}
       - RABBITMQ_URL=amqp://rabbitmq:5672
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -92,22 +119,28 @@ services:
 
   # API Gateway
   api-gateway:
-    build: ./services/api-gateway
+    build: 
+      context: ./services/api-gateway
     container_name: hotstar-api-gateway
     restart: always
     ports:
       - "5000:5000"
-    env_file: .env
     environment:
+      - NODE_ENV=production
+      - PORT=5000
       - AUTH_SERVICE=http://auth-service:5001
       - USER_SERVICE=http://user-service:5002
       - VIDEO_SERVICE=http://video-service:5003
       - STREAMING_SERVICE=http://streaming-service:5005
     depends_on:
-      - auth-service
-      - user-service
-      - video-service
-      - streaming-service
+      auth-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      video-service:
+        condition: service_healthy
+      streaming-service:
+        condition: service_healthy
     networks:
       - hotstar-network
 
@@ -117,13 +150,13 @@ services:
       context: ./frontend
       args:
         - NEXT_PUBLIC_API_BASE_URL=http://3.7.114.115:5000
-        - NEXT_PUBLIC_STREAMING_BASE_URL=http://3.7.114.115:5000/api/stream
     container_name: hotstar-frontend
     restart: always
     ports:
       - "3000:3000"
     depends_on:
-      - api-gateway
+      api-gateway:
+        condition: service_healthy
     networks:
       - hotstar-network
 

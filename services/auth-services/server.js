@@ -3,29 +3,35 @@ import connectDB from "./config/db.js";
 import authRoute from "./routes/authRoute.js";
 import { verifyToken } from "./controllers/authController.js"
 import cors from "cors";
-import dotenv from "dotenv";
-dotenv.config();
 
 const app = express();
-// Enable CORS for Next.js frontend
+const PORT = process.env.PORT || 5001;
+console.log("Starting Auth Service on PORT:", PORT);
+
 app.use(cors({
   origin: "*",
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json());
 
+// Health Check Endpoint
+app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+});
 
+// Routes
 app.use("/api/auth", authRoute); 
 app.get("/verify", verifyToken);
 
 app.get("/", (req, res) => {
-    res.send("Server Health is ok...");
+    res.send("Auth Service is healthy");
 });
 
 connectDB();
-const PORT = process.env.PORT || 5001;
+
 app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Auth Service running on port ${PORT}`);
+    console.log(`[OK] Auth Service running on port ${PORT}`);
 });

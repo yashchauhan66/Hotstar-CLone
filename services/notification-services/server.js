@@ -3,6 +3,8 @@ import cors from "cors"
 import {startConsumer} from "./rabbitmq/consumer.js"
 
 const app = express()
+const PORT = process.env.PORT || 5006;
+console.log("Starting Notification Service on PORT:", PORT);
 
 app.use(cors({
   origin: "*",
@@ -10,10 +12,15 @@ app.use(cors({
 }));
 app.use(express.json());
 
+
+app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+});
+
 const startServer = async () => {
   try {
-    app.listen(5006, "0.0.0.0", () => {
-      console.log("Notification Service running on port 5006");
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`[OK] Notification Service running on port ${PORT}`);
     });
     await startConsumer();
 
@@ -23,8 +30,3 @@ const startServer = async () => {
 };
 
 startServer();
-
-
-
-
-

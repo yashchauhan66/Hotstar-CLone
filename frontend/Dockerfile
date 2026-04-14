@@ -1,4 +1,4 @@
-FROM node:18-alpine as builder
+FROM node:20-alpine as builder
 
 WORKDIR /app
 
@@ -23,7 +23,9 @@ RUN npm run build
 
 
 # Production stage - Use Node.js to run Next.js standalone
-FROM node:18-alpine
+FROM node:20-alpine
+
+RUN apk add --no-cache curl
 
 WORKDIR /app
 
@@ -41,5 +43,8 @@ EXPOSE 3000
 
 ENV NODE_ENV=production
 ENV PORT=3000
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD curl -f http://localhost:3000/ health || exit 1
 
 CMD ["node", "server.js"]
