@@ -3,6 +3,9 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 export const authProxy = createProxyMiddleware({
   target: process.env.AUTH_SERVICE || 'http://auth-service:5001',
   changeOrigin: true,
+  onProxyReq: (proxyReq, req, res) => {
+    console.log(`[PROXY-OUT] Forwarding to auth-service: ${proxyReq.method} ${proxyReq.path}`);
+  },
   onError: (err, req, res) => {
     console.error('Auth Proxy Error:', err.message);
     res.status(502).json({ error: 'Auth service unavailable' });

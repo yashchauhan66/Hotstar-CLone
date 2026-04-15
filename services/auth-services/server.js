@@ -22,6 +22,11 @@ app.get("/health", (req, res) => {
     res.status(200).send("OK");
 });
 
+app.use((req, res, next) => {
+    console.log(`[AUTH-IN] ${req.method} ${req.url} (original: ${req.originalUrl})`);
+    next();
+});
+
 // Routes
 app.use(["/api/auth", "/"], authRoute); 
 app.get("/verify", verifyToken);
