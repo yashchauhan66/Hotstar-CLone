@@ -23,7 +23,7 @@ app.get("/health", (req, res) => {
 });
 
 // Routes
-app.use("/api/auth", authRoute); 
+app.use(["/api/auth", "/"], authRoute); 
 app.get("/verify", verifyToken);
 
 app.get("/", (req, res) => {

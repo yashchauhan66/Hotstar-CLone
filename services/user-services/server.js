@@ -28,7 +28,7 @@ app.get("/health", (req, res) => {
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.use("/api/users", userRoute);
+app.use(["/api/users", "/"], userRoute);
 
 app.get("/", (req, res) => {
     res.send("User Service is healthy");
