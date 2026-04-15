@@ -15,7 +15,7 @@ import {
 const HomePage: React.FC = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user, isInitialized } = useSelector((state: RootState) => state.auth);
   const isAdmin = user?.role === 'admin';
   const {
     videos,
@@ -26,10 +26,10 @@ const HomePage: React.FC = () => {
   } = useSelector((state: RootState) => state.videos);
 
   useEffect(() => {
-    if (!isAuthenticated && !isLoading) {
+    if (isInitialized && !isAuthenticated && !isLoading) {
       router.push('/login');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isInitialized, isAuthenticated, isLoading, router]);
 
 
   useEffect(() => {

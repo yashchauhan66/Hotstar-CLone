@@ -127,7 +127,8 @@ export const processUploadWithThumbnail = async (files, body) => {
     // Extract just the filename without the 'videos/' prefix
     // videoUrl format: https://bucket.s3.region.amazonaws.com/videos/uuid.mp4
     const filename = videoUrl.split('/').pop();
-    const streamingUrl = `http://localhost:5005/api/stream/${filename}`;
+    const STREAMING_HOST = process.env.STREAMING_SERVICE_URL || 'http://streaming-service:5005';
+    const streamingUrl = `${STREAMING_HOST}/api/stream/${filename}`;
 
     const video = new Video({
       title: body.title || videoFile.originalname,

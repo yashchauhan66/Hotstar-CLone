@@ -2,7 +2,7 @@ import amqp from "amqplib";
 import { sendEmail } from "../sendEmail/emailService.js";
 
 export const startConsumer = async () => {
-  const RABBIT_URL = process.env.RABBITMQ_URL || "amqp://localhost:5672";
+  const RABBIT_URL = process.env.RABBITMQ_URL || "amqp://rabbitmq:5672";
   
   while (true) {
     try {

@@ -1,10 +1,18 @@
 import express from "express";
 import cors from "cors";
 import { authProxy, userProxy, videoProxy, streamingProxy } from "./routes/proxyRoutes.js";
+import {rateLimit} from "express-rate-limit"
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 console.log("Starting API Gateway on PORT:", PORT);
+
+const limit=rateLimit({
+  
+  windowMs: 10 * 60 * 1000,
+  max: 300,
+  message: "Too many requests, try again later",
+})
 
 app.use(cors({
   origin: "*", 
@@ -13,18 +21,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization']
 }));
 
-// Route for health checks
+
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
 
-// Mount proxies BEFORE body-parser to avoid proxy issues
+app.use(limit);
 app.use("/api/auth", authProxy);
 app.use("/api/users", userProxy);
 app.use("/api/videos", videoProxy);
 app.use("/api/stream", streamingProxy);
 
-// Only parse JSON for Gateway's own management routes (if any)
+
 app.use(express.json());
 
 app.use((req, res) => {

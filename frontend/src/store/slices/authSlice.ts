@@ -15,6 +15,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  isInitialized: boolean;
 }
 
 const initialState: AuthState = {
@@ -23,6 +24,7 @@ const initialState: AuthState = {
   isLoading: false,
   error: null,
   isAuthenticated: false,
+  isInitialized: false,
 };
 
 export const loginUser = createAsyncThunk(
@@ -74,6 +76,7 @@ const authSlice = createSlice({
       }
     },
     initializeAuth: (state) => {
+      state.isInitialized = true;
       if (typeof window !== 'undefined') {
         const token = localStorage.getItem('token');
         const user = localStorage.getItem('user');

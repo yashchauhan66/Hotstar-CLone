@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const sendToQueue = async (data) => {
-  const RABBIT_URL = process.env.RABBITMQ_URL || "amqp://localhost:5672";
+  const RABBIT_URL = process.env.RABBITMQ_URL || "amqp://rabbitmq:5672";
   let connection;
   
   while (true) {
