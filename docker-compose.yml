@@ -38,6 +38,11 @@ services:
         condition: service_healthy
     networks:
       - hotstar-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # User Service
   user-service:
@@ -54,6 +59,11 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     networks:
       - hotstar-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5002/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Video Service
   video-service:
@@ -67,6 +77,7 @@ services:
       - NODE_ENV=production
       - PORT=5003
       - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
       - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
       - AWS_REGION=${AWS_REGION}
@@ -75,6 +86,11 @@ services:
       - video_storage:/app/src/videos
     networks:
       - hotstar-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5003/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Streaming Service
   streaming-service:
@@ -88,6 +104,7 @@ services:
       - NODE_ENV=production
       - PORT=5005
       - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
       - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
       - AWS_REGION=${AWS_REGION}
@@ -96,6 +113,11 @@ services:
       - video_storage:/app/src/videos
     networks:
       - hotstar-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5005/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Notification Service
   notification-service:
@@ -117,6 +139,11 @@ services:
         condition: service_healthy
     networks:
       - hotstar-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5006/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # API Gateway
   api-gateway:
@@ -144,6 +171,11 @@ services:
         condition: service_healthy
     networks:
       - hotstar-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Frontend
   frontend:
