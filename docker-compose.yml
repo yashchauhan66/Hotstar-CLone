@@ -184,6 +184,7 @@ services:
       context: ./frontend
       args:
         - NEXT_PUBLIC_API_BASE_URL=http://3.7.114.115:5000
+        - NEXT_PUBLIC_STREAMING_BASE_URL=http://3.7.114.115:5000/api/stream
     container_name: hotstar-frontend
     restart: always
     ports:
