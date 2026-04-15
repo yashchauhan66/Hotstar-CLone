@@ -1,11 +1,11 @@
-FROM node:20-alpine as builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install ALL dependencies (dev deps needed for TypeScript build)
 RUN npm ci
 
 # Copy source code
@@ -29,15 +29,10 @@ RUN apk add --no-cache curl
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
-# Install only production dependencies
-RUN npm ci --only=production
-
-# Copy standalone build from builder
+# Copy standalone build from builder (includes all needed node_modules)
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
 EXPOSE 3000
 
