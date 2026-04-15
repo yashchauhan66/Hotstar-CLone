@@ -35,6 +35,7 @@ app.use(limit);
 app.use("/api/auth", authProxy);
 app.use("/api/users", userProxy);
 app.use("/api/videos", videoProxy);
+app.use("/api/upload", videoProxy);
 app.use("/api/stream", streamingProxy);
 
 

@@ -148,7 +148,7 @@ const UploadPage: React.FC = () => {
       }
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5003/api/upload', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/api/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
