@@ -13,14 +13,14 @@ const Layout: React.FC<LayoutProps> = ({ children, title, description }) => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   React.useEffect(() => {
-    // Update document title
+
     if (title) {
       document.title = `${title} - Hotstar`;
     } else {
       document.title = 'Hotstar - Watch Movies & TV Shows Online';
     }
 
-    // Update meta description
+    
     if (description) {
       const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription) {
