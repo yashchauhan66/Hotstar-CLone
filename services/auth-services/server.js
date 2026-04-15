@@ -28,7 +28,8 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use(["/api/auth", "/"], authRoute); 
+app.use("/api/auth", authRoute);
+app.use("/", authRoute); 
 app.get("/verify", verifyToken);
 
 app.get("/", (req, res) => {

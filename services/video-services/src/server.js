@@ -30,7 +30,8 @@ app.get('/api-health', (req, res) => {
   });
 });
 
-app.use(["/api", "/"], videoRoutes);
+app.use("/api", videoRoutes);
+app.use("/", videoRoutes);
 
 const startServer = async () => {
   try {

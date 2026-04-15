@@ -58,6 +58,7 @@ export const Login = async (req, res) => {
         }
         const user = await User.findOne({ email });
         if (!user) {
+            console.log(`[AUTH-LOGIC] Failed login: User not found (${email})`);
             return res.status(404).json({ message: "User Not Found" })
         }
         const isMatch = await bcrypt.compare(password, user.password);
