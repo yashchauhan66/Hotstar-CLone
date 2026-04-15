@@ -27,8 +27,7 @@ app.get('/api-health', (req, res) => {
   });
 });
 
-app.use("/api", streamRoutes);
-app.use("/", streamRoutes);
+app.use('/api', streamRoutes);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`[OK] Streaming Service running on port ${PORT}`);
