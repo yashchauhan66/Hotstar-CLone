@@ -70,7 +70,7 @@ const ProfilePage: React.FC = () => {
         const avatarUrl = response.data.avatar
           ? (response.data.avatar.startsWith('http')
               ? response.data.avatar
-              : `http://localhost:5002${response.data.avatar}`)
+              : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/api/users${response.data.avatar}`)
           : '';
 
         setProfile({
@@ -112,7 +112,7 @@ const ProfilePage: React.FC = () => {
     try {
       // Convert full URL to relative path for backend
       const avatarPath = profile.avatar.startsWith('http')
-        ? profile.avatar.replace('http://localhost:5002', '')
+        ? profile.avatar.replace(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/api/users`, '')
         : profile.avatar;
 
       const response = await userAPI.updateProfile({
@@ -124,7 +124,7 @@ const ProfilePage: React.FC = () => {
 
       const updatedAvatar = response.data.avatar.startsWith('http')
         ? response.data.avatar
-        : `http://localhost:5002${response.data.avatar}`;
+        : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/api/users${response.data.avatar}`;
 
       setMessage('Profile updated successfully!');
       setProfile({
@@ -181,7 +181,7 @@ const ProfilePage: React.FC = () => {
 
     try {
       const response = await userAPI.uploadAvatar(file);
-      const avatarUrl = `http://localhost:5002${response.data.data.avatar}`;
+      const avatarUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/api/users${response.data.data.avatar}`;
       setProfile({ ...profile, avatar: avatarUrl });
       
       // Update Redux state immediately after avatar upload

@@ -49,7 +49,7 @@ const Navbar: React.FC = () => {
             // Construct full avatar URL if it's a relative path
             const avatarUrl = response.data.avatar.startsWith('http')
               ? response.data.avatar
-              : `http://localhost:5002${response.data.avatar}`;
+              : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/api/users${response.data.avatar}`;
             setUserProfile({ ...response.data, avatar: avatarUrl });
           } else {
             setUserProfile(response.data);

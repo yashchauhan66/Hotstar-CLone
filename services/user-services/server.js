@@ -27,6 +27,7 @@ app.get("/health", (req, res) => {
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/users/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use("/api/users", userRoute);
 
