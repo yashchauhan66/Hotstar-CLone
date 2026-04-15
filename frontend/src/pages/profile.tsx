@@ -122,21 +122,23 @@ const ProfilePage: React.FC = () => {
         preferences: profile.preferences,
       });
 
+      const updatedAvatar = response.data.avatar.startsWith('http')
+        ? response.data.avatar
+        : `http://localhost:5002${response.data.avatar}`;
+
       setMessage('Profile updated successfully!');
       setProfile({
         ...profile,
         name: response.data.name,
         email: response.data.email,
-        avatar: response.data.avatar.startsWith('http')
-          ? response.data.avatar
-          : `http://localhost:5002${response.data.avatar}`,
+        avatar: updatedAvatar,
         preferences: response.data.preferences,
       });
 
       // Update Redux state to reflect changes across the app
       dispatch(updateUser({
         name: response.data.name,
-        avatar: avatarUrl
+        avatar: updatedAvatar
       }));
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update profile');

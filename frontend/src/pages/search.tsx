@@ -59,12 +59,8 @@ const SearchPage: React.FC = () => {
             {results.map((video) => (
               <VideoCard
                 key={video._id}
-                id={video._id}
-                title={video.title}
-                thumbnail={video.thumbnail}
-                views={video.views}
-                duration={video.duration}
-                category={video.category}
+                video={video}
+                size="large"
               />
             ))}
           </motion.div>

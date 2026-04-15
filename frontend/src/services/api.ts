@@ -107,6 +107,16 @@ export const userAPI = {
   getProfile: () => userApi.get('/api/users/profile'),
 
   updateProfile: (data: any) => userApi.put('/api/users/profile', data),
+
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return userApi.post('/api/users/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 
 export const streamingAPI = {
