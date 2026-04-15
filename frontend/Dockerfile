@@ -36,8 +36,8 @@ WORKDIR /app
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy public assets (use wildcard to avoid failure if dir is empty)
-COPY --from=builder /app/public ./public
+# Copy public assets (use wildcard to ensure it doesn't fail if the directory is missing in Git)
+COPY --from=builder /app/publi[c] ./public/
 
 EXPOSE 3000
 
