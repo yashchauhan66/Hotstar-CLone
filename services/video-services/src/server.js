@@ -3,7 +3,17 @@ import cors from 'cors';
 import { connectDB } from './config/database.js';
 import videoRoutes from './routes/videoRoutes.js';
 
+import promBundle from "express-prom-bundle";
+const metricsMiddleware = promBundle({
+  includeMethod: true,
+  includePath: true,
+  includeStatusCode: true,
+  includeUp: true,
+  promClient: { collectDefaultMetrics: {} }
+});
+
 const app = express();
+app.use(metricsMiddleware);
 const PORT = process.env.PORT || 5003;
 console.log("Starting Video Service on PORT:", PORT);
 

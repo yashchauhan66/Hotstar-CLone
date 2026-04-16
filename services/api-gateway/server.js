@@ -3,7 +3,17 @@ import cors from "cors";
 import { authProxy, userProxy, videoProxy, streamingProxy } from "./routes/proxyRoutes.js";
 import {rateLimit} from "express-rate-limit"
 
+import promBundle from "express-prom-bundle";
+const metricsMiddleware = promBundle({
+  includeMethod: true,
+  includePath: true,
+  includeStatusCode: true,
+  includeUp: true,
+  promClient: { collectDefaultMetrics: {} }
+});
+
 const app = express();
+app.use(metricsMiddleware);
 const PORT = process.env.PORT || 5000;
 console.log("Starting API Gateway on PORT:", PORT);
 

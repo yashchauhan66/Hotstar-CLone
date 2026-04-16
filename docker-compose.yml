@@ -195,6 +195,36 @@ services:
     networks:
       - hotstar-network
 
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hotstar-prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - hotstar-network
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hotstar-grafana
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - hotstar-network
+
 networks:
   hotstar-network:
     driver: bridge
@@ -202,3 +232,5 @@ networks:
 volumes:
   rabbitmq_data:
   video_storage:
+  prometheus_data:
+  grafana_data:

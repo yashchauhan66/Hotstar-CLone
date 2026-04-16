@@ -4,7 +4,17 @@ import authRoute from "./routes/authRoute.js";
 import { verifyToken } from "./controllers/authController.js"
 import cors from "cors";
 
+import promBundle from "express-prom-bundle";
+const metricsMiddleware = promBundle({
+  includeMethod: true,
+  includePath: true,
+  includeStatusCode: true,
+  includeUp: true,
+  promClient: { collectDefaultMetrics: {} }
+});
+
 const app = express();
+app.use(metricsMiddleware);
 const PORT = process.env.PORT || 5001;
 console.log("Starting Auth Service on PORT:", PORT);
 

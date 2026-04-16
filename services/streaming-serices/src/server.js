@@ -2,7 +2,17 @@ import express from 'express';
 import cors from 'cors';
 import streamRoutes from './routes/streamRoutes.js';
 
+import promBundle from "express-prom-bundle";
+const metricsMiddleware = promBundle({
+  includeMethod: true,
+  includePath: true,
+  includeStatusCode: true,
+  includeUp: true,
+  promClient: { collectDefaultMetrics: {} }
+});
+
 const app = express();
+app.use(metricsMiddleware);
 const PORT = process.env.PORT || 5005;
 console.log("Starting Streaming Service on PORT:", PORT);
 

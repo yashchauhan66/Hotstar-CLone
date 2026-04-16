@@ -8,7 +8,17 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+import promBundle from "express-prom-bundle";
+const metricsMiddleware = promBundle({
+  includeMethod: true,
+  includePath: true,
+  includeStatusCode: true,
+  includeUp: true,
+  promClient: { collectDefaultMetrics: {} }
+});
+
 const app = express();
+app.use(metricsMiddleware);
 const PORT = process.env.PORT || 5002;
 console.log("Starting User Service on PORT:", PORT);
 

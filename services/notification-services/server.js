@@ -2,7 +2,17 @@ import express from "express"
 import cors from "cors"
 import {startConsumer} from "./rabbitmq/consumer.js"
 
+import promBundle from "express-prom-bundle";
+const metricsMiddleware = promBundle({
+  includeMethod: true,
+  includePath: true,
+  includeStatusCode: true,
+  includeUp: true,
+  promClient: { collectDefaultMetrics: {} }
+});
+
 const app = express()
+app.use(metricsMiddleware);
 const PORT = process.env.PORT || 5006;
 console.log("Starting Notification Service on PORT:", PORT);
 
