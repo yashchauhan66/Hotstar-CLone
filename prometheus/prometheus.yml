@@ -1,27 +1,31 @@
 global:
-  scrape_interval: 15s
+  scrape_interval: 5s
 
 scrape_configs:
-  - job_name: 'api-gateway'
-    static_configs:
-      - targets: ['api-gateway:5000']
-  
-  - job_name: 'auth-service'
-    static_configs:
-      - targets: ['auth-service:5001']
-
   - job_name: 'user-service'
     static_configs:
-      - targets: ['user-service:5002']
+      - targets: ['hotstar-user-service:5002']
+
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['hotstar-auth-service:5001']
 
   - job_name: 'video-service'
     static_configs:
-      - targets: ['video-service:5003']
+      - targets: ['hotstar-video-service:5003']
+
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['hotstar-api-gateway:5000']
 
   - job_name: 'streaming-service'
     static_configs:
-      - targets: ['streaming-service:5005']
+      - targets: ['hotstar-streaming-service:5005']
 
   - job_name: 'notification-service'
     static_configs:
-      - targets: ['notification-service:5006']
+      - targets: ['hotstar-notification-service:5006']
+
+  - job_name: 'frontend'
+    static_configs:
+      - targets: ['hotstar-frontend:3000']
